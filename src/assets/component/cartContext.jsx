@@ -1,9 +1,14 @@
-import React, { createContext, useReducer } from "react";
+import React, { createContext, useEffect, useReducer } from "react";
 
 export const CartContext = createContext();
 
+const getLocalCartData = () => {
+  let localCartData = localStorage.getItem("ProductCart");
+  return localCartData ? JSON.parse(localCartData) : [];
+};
+
 const initialState = {
-  cartItems: [],
+  cartItems: getLocalCartData(),
 };
 
 const reducer = (state, action) => {
@@ -54,7 +59,6 @@ const reducer = (state, action) => {
       };
 
     case "decreaseQuantity":
-      // Decrease the quantity of a specific item (but not below 1)
       return {
         ...state,
         cartItems: state.cartItems.map((item) =>
@@ -71,6 +75,10 @@ const reducer = (state, action) => {
 
 export const CartProvider = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
+
+  useEffect(() => {
+    localStorage.setItem("ProductCart", JSON.stringify(state.cartItems));
+  }, [state.cartItems]);
 
   return (
     <CartContext.Provider value={{ state, dispatch }}>
